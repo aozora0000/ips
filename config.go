@@ -1,18 +1,18 @@
 package ips
 
 import (
-	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path"
 )
 
+// +gen * slice:"Map"
 type User struct {
 	Name       string `yaml:"name"`
 	LoginUser  string `yaml:"login_user"`
 	MacAddress string `yaml:"mac_address"`
-	IpAddress  string `yaml:"ip_address"`
+	IpAddress  string `yaml:"ip_address,omitempty"`
 }
 
 func (u User) ToSlice() []string {
@@ -22,32 +22,6 @@ func (u User) ToSlice() []string {
 		u.MacAddress,
 		u.IpAddress,
 	}
-}
-
-func (e *User) UnmarshalYAML(unmarshal func(interface{}) error) (err error) {
-
-	var aux interface{}
-	if err = unmarshal(&aux); err != nil {
-		return
-	}
-
-	switch raw := aux.(type) {
-	case string:
-		*e = []string{raw}
-
-	case []interface{}:
-		list := make([]string, len(raw))
-		for i, r := range raw {
-			v, ok := r.(string)
-			if !ok {
-				return fmt.Errorf("An item in evn cannot be converted to a string: %v", aux)
-			}
-			list[i] = v
-		}
-		*e = list
-
-	}
-	return
 }
 
 type Config struct {
@@ -88,5 +62,5 @@ func (c Config) FindUser(mac_address string, ip_address string) User {
 			return user
 		}
 	}
-	return User{Name: "Unknown", LoginUser: "Unknown" ,MacAddress: mac_address, IpAddress: ip_address}
+	return User{Name: "Unknown", LoginUser: "Unknown", MacAddress: mac_address, IpAddress: ip_address}
 }
